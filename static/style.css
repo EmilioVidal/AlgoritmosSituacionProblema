@@ -1,0 +1,29 @@
+* {
+    box-sizing: border-box;
+}
+
+#todo {
+    display: flex;
+    flex-wrap: wrap;  
+    padding: 10px;    
+    gap: 10px;       
+}
+
+#text1, #text2 {
+    flex: 1;          
+    min-width: 300px; 
+    margin: 10px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#contenidoTXT {
+    background-color: rgb(170, 168, 165);
+    border-radius: 10px;
+    padding: 35px;
+    text-align: left;
+    word-wrap: break-word; 
+    white-space: pre-wrap; 
+    overflow: auto;        
+    font-weight: bold
+}
