@@ -5,60 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subir Archivos y Algoritmos</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function toggleFields() {
+            const selectedAlgorithm = document.getElementById("algorithmSelect").value;
+            const buscarFields = document.getElementById("buscarFields");
+            const palindromoFields = document.getElementById("palindromoFields");
+
+            // Mostrar u ocultar campos según la selección
+            if (selectedAlgorithm === "buscar") {
+                buscarFields.style.display = "block";
+                palindromoFields.style.display = "none";
+            } else if (selectedAlgorithm === "palindromo") {
+                buscarFields.style.display = "none";
+                palindromoFields.style.display = "block";
+            }
+        }
+    </script>
 </head>
 <body>
-    <h1>Sube archivos de manera separada para aplicar algoritmos</h1>
-<div id="todo">
+    <h1>Sube archivos y selecciona un algoritmo</h1>
 
-    <div id="text1">
-        <!-- Formulario para subir el primer archivo -->
-        <form action="/upload_file1" method="POST" enctype="multipart/form-data">
-            <label for="file1">Selecciona el primer archivo TXT:</label>
-            <input type="file" id="file1" name="file1" accept=".txt" required><br><br>
-            <button type="submit">Cargar Primer Archivo</button>
-        </form>
-        <!-- Mostrar el contenido del primer archivo si está cargado -->
-        {% if content1 %}
-        <h2>Contenido del primer archivo:</h2>
-        <pre id="contenidoTXT">{{ content1|safe }}</pre>  <!-- Usamos |safe para renderizar HTML -->
+    <div id="todo">
+        <div id="text1" style="float:left;width:48%;">
+            <!-- Formulario para subir el primer archivo -->
+            <form action="/upload_file1" method="POST" enctype="multipart/form-data">
+                <label for="file1">Selecciona el primer archivo TXT:</label>
+                <input type="file" id="file1" name="file1" accept=".txt" required><br><br>
+                <button type="submit">Cargar Primer Archivo</button>
+            </form>
 
-        <h2>Selecciona un algoritmo para aplicar al primer archivo</h2>
-        <form action="/apply_algorithm_file1" method="POST">
-            <input type="hidden" name="file1_content" value="{{ content1 }}">
-            <!-- Campo para ingresar el patrón (palíndromo) -->
-            <label for="palindromo">Patrón a buscar (palíndromo):</label>
-            <input type="text" id="palindromo" name="palindromo" required><br><br>
-            <button type="submit" name="algorithm" value="algoritmo1">Aplicar Algoritmo 1</button>
-            <button type="submit" name="algorithm" value="algoritmo2">Aplicar Algoritmo 2</button>
-        </form>
-        {% endif %}
+            <!-- Mostrar el contenido del primer archivo si está cargado -->
+            {% if content1 %}
+            <h2>Contenido del primer archivo:</h2>
+            <pre id="contenidoTXT">{{ highlighted_content|safe }}</pre> <!-- Usamos |safe para renderizar HTML -->
+
+            <!-- Menú para seleccionar el algoritmo -->
+            <h2>Selecciona un algoritmo</h2>
+            <label for="algorithmSelect">Algoritmo:</label>
+            <select id="algorithmSelect" name="algorithm" onchange="toggleFields()">
+                <option value="">Selecciona una opción</option>
+                <option value="buscar">Buscar Patrón (KMP/Z)</option>
+                <option value="palindromo">Buscar Palíndromo (Manacher)</option>
+            </select>
+
+            <!-- Formulario para ejecutar el algoritmo seleccionado -->
+            <form action="/apply_algorithm_file1" method="POST">
+                <input type="hidden" name="file1_content" value="{{ content1 }}">
+
+                <!-- Campos específicos para Buscar -->
+                <div id="buscarFields" style="display:none;">
+                    <label for="palindromo">Patrón a buscar:</label>
+                    <input type="text" id="palindromo" name="palindromo"><br><br>
+                    <button type="submit" name="algorithm" value="buscar">Buscar Patrón (KMP/Z)</button>
+                </div>
+
+                <!-- Campos específicos para Palíndromo -->
+                <div id="palindromoFields" style="display:none;">
+                    <button type="submit" name="algorithm" value="palindromo">Buscar Palíndromo (Manacher)</button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+
+        <div id="text2" style="float:right;width:48%;">
+            <!-- Formulario para subir el segundo archivo -->
+            <form action="/upload_file2" method="POST" enctype="multipart/form-data">
+                <label for="file2">Selecciona el segundo archivo TXT:</label>
+                <input type="file" id="file2" name="file2" accept=".txt" required><br><br>
+                <button type="submit">Cargar Segundo Archivo</button>
+            </form>
+
+            <!-- Mostrar el contenido del segundo archivo si está cargado -->
+            {% if content2 %}
+            <h2>Contenido del segundo archivo:</h2>
+            <pre id="contenidoTXT">{{ content2|safe }}</pre> <!-- Usamos |safe para renderizar HTML -->
+            {% endif %}
+        </div>
     </div>
-
-    <div id="text2">
-        <!-- Formulario para subir el segundo archivo -->
-        <form action="/upload_file2" method="POST" enctype="multipart/form-data">
-            <label for="file2">Selecciona el segundo archivo TXT:</label>
-            <input type="file" id="file2" name="file2" accept=".txt" required><br><br>
-            <button type="submit">Cargar Segundo Archivo</button>
-        </form>
-        <!-- Mostrar el contenido del segundo archivo si está cargado -->
-        {% if content2 %}
-        <h2>Contenido del segundo archivo:</h2>
-        <pre id="contenidoTXT">{{ content2|safe }}</pre> <!-- Usamos |safe para renderizar HTML -->
-
-        <h2>Selecciona un algoritmo para aplicar al segundo archivo</h2>
-        <form action="/apply_algorithm_file2" method="POST">
-            <input type="hidden" name="file2_content" value="{{ content2 }}">
-            <!-- Campo para ingresar el patrón (palíndromo) -->
-            <label for="palindromo">Patrón a buscar (palíndromo):</label>
-            <input type="text" id="palindromo" name="palindromo" required><br><br>
-            <button type="submit" name="algorithm" value="algoritmo1">Aplicar Algoritmo 1</button>
-            <button type="submit" name="algorithm" value="algoritmo2">Aplicar Algoritmo 2</button>
-        </form>
-        {% endif %}
-    </div>
-
-</div>
-
 </body>
 </html>
