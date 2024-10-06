@@ -10,77 +10,132 @@
             const selectedAlgorithm = document.getElementById("algorithmSelect").value;
             const buscarFields = document.getElementById("buscarFields");
             const palindromoFields = document.getElementById("palindromoFields");
+            const singlePanel = document.getElementById("singlePanel"); // Panel centrado
+            const doublePanel = document.getElementById("doublePanel"); // Panel de similitud
+            const lcsButton = document.getElementById("lcsButton");    // Botón de Similitud
 
-            // Mostrar u ocultar campos según la selección
+            // Mostrar u ocultar los paneles según el algoritmo seleccionado
             if (selectedAlgorithm === "buscar") {
                 buscarFields.style.display = "block";
                 palindromoFields.style.display = "none";
+                singlePanel.style.display = "block";  // Mostrar panel centrado
+                doublePanel.style.display = "none";   // Ocultar panel de similitud
+                lcsButton.style.display = "none";     // Ocultar botón LCS
             } else if (selectedAlgorithm === "palindromo") {
                 buscarFields.style.display = "none";
                 palindromoFields.style.display = "block";
+                singlePanel.style.display = "block";  // Mostrar panel centrado
+                doublePanel.style.display = "none";   // Ocultar panel de similitud
+                lcsButton.style.display = "none";     // Ocultar botón LCS
+            } else if (selectedAlgorithm === "similitud") {
+                buscarFields.style.display = "none";
+                palindromoFields.style.display = "none";
+                singlePanel.style.display = "none";   // Ocultar panel centrado
+                doublePanel.style.display = "flex";   // Mostrar panel de similitud
+
+                // Mostrar el botón LCS solo si ambos archivos han sido cargados
+                const file1Loaded = "{{ content1 }}" !== "";
+                const file2Loaded = "{{ content2 }}" !== "";
+                if (file1Loaded && file2Loaded) {
+                    lcsButton.style.display = "block";  // Mostrar botón si ambos archivos están cargados
+                } else {
+                    lcsButton.style.display = "none";   // Ocultar botón si falta algún archivo
+                }
+            }
+        }
+
+        // Mantener la opción seleccionada después de recargar
+        window.onload = function() {
+            const selectedOption = "{{ selected_option }}";
+            if (selectedOption) {
+                document.getElementById("algorithmSelect").value = selectedOption;
+                toggleFields();
             }
         }
     </script>
 </head>
 <body>
-    <h1>Sube archivos y selecciona un algoritmo</h1>
+    <h1>Selecciona un algoritmo para comenzar</h1>
 
-    <div id="todo">
-        <div id="text1" style="float:left;width:48%;">
-            <!-- Formulario para subir el primer archivo -->
+    <!-- Menú para seleccionar el algoritmo -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <form action="/select_option" method="POST">
+            <label for="algorithmSelect">Elige un algoritmo:</label>
+            <select id="algorithmSelect" name="algorithm" onchange="this.form.submit()" style="width: 300px;">
+                <option value="">Selecciona una opción</option>
+                <option value="buscar">Buscar Patrón (KMP/Z)</option>
+                <option value="palindromo">Buscar Palíndromo (Manacher)</option>
+                <option value="similitud">Similitud entre dos textos (LCS)</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Panel para un solo archivo (Buscar Patrón o Palíndromo) -->
+    <div id="singlePanel" style="text-align: center; margin: 0 auto; width: 50%;">
+        <div style="background-color: #f4f4f9; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <form action="/upload_file1" method="POST" enctype="multipart/form-data">
-                <label for="file1">Selecciona el primer archivo TXT:</label>
+                <label for="file1">Selecciona el archivo TXT:</label>
                 <input type="file" id="file1" name="file1" accept=".txt" required><br><br>
-                <button type="submit">Cargar Primer Archivo</button>
+                <button type="submit">Cargar Archivo</button>
             </form>
 
             <!-- Mostrar el contenido del primer archivo si está cargado -->
             {% if content1 %}
-            <h2>Contenido del primer archivo:</h2>
+            <h2>Contenido del archivo:</h2>
             <pre id="contenidoTXT">{{ highlighted_content|safe }}</pre> <!-- Usamos |safe para renderizar HTML -->
-
-            <!-- Menú para seleccionar el algoritmo -->
-            <h2>Selecciona un algoritmo</h2>
-            <label for="algorithmSelect">Algoritmo:</label>
-            <select id="algorithmSelect" name="algorithm" onchange="toggleFields()">
-                <option value="">Selecciona una opción</option>
-                <option value="buscar">Buscar Patrón (KMP/Z)</option>
-                <option value="palindromo">Buscar Palíndromo (Manacher)</option>
-            </select>
 
             <!-- Formulario para ejecutar el algoritmo seleccionado -->
             <form action="/apply_algorithm_file1" method="POST">
                 <input type="hidden" name="file1_content" value="{{ content1 }}">
-
-                <!-- Campos específicos para Buscar -->
                 <div id="buscarFields" style="display:none;">
-                    <label for="palindromo">Patrón a buscar:</label>
-                    <input type="text" id="palindromo" name="palindromo"><br><br>
+                    <label for="patron">Patrón a buscar:</label>
+                    <input type="text" id="patron" name="patron"><br><br>
                     <button type="submit" name="algorithm" value="buscar">Buscar Patrón (KMP/Z)</button>
                 </div>
-
-                <!-- Campos específicos para Palíndromo -->
                 <div id="palindromoFields" style="display:none;">
                     <button type="submit" name="algorithm" value="palindromo">Buscar Palíndromo (Manacher)</button>
                 </div>
             </form>
             {% endif %}
         </div>
+    </div>
 
-        <div id="text2" style="float:right;width:48%;">
-            <!-- Formulario para subir el segundo archivo -->
+    <!-- Panel para dos archivos (LCS - Similitud) -->
+    <div id="doublePanel" style="display: none; justify-content: space-between;">
+        <div style="flex: 1; background-color: #f4f4f9; padding: 20px; border-radius: 10px; margin-right: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <form action="/upload_file1" method="POST" enctype="multipart/form-data">
+                <label for="file1">Selecciona el primer archivo TXT:</label>
+                <input type="file" id="file1" name="file1" accept=".txt" required><br><br>
+                <button type="submit">Cargar Primer Archivo</button>
+            </form>
+
+            {% if content1 %}
+            <h2>Contenido del primer archivo:</h2>
+            <pre id="contenidoTXT">{{ highlighted_content['file1']|safe }}</pre> <!-- Resaltado en azul claro solo para el primer archivo -->
+            {% endif %}
+        </div>
+
+        <div style="flex: 1; background-color: #f4f4f9; padding: 20px; border-radius: 10px; margin-left: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <form action="/upload_file2" method="POST" enctype="multipart/form-data">
                 <label for="file2">Selecciona el segundo archivo TXT:</label>
                 <input type="file" id="file2" name="file2" accept=".txt" required><br><br>
                 <button type="submit">Cargar Segundo Archivo</button>
             </form>
 
-            <!-- Mostrar el contenido del segundo archivo si está cargado -->
             {% if content2 %}
             <h2>Contenido del segundo archivo:</h2>
-            <pre id="contenidoTXT">{{ content2|safe }}</pre> <!-- Usamos |safe para renderizar HTML -->
+            <pre id="contenidoTXT">{{ highlighted_content['file2']|safe }}</pre> <!-- Resaltado en azul claro solo para el segundo archivo -->
             {% endif %}
         </div>
+    </div>
+
+    <!-- Formulario para aplicar el algoritmo LCS -->
+    <div id="lcsButton" style="text-align: center; margin-top: 20px; width: 100%; display: none;">
+        <form action="/apply_algorithm_lcs" method="POST">
+            <input type="hidden" name="file1_content" value="{{ content1 }}">
+            <input type="hidden" name="file2_content" value="{{ content2 }}">
+            <button type="submit" style="padding: 10px 20px; font-size: 16px;">Aplicar Similitud (LCS)</button>
+        </form>
     </div>
 </body>
 </html>
